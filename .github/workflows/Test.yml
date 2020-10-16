@@ -1,16 +1,17 @@
-#修改TNAME: K2P-5.0 中的K2P-5.0为你需要编译的型号，注意名称要与configs/templates/目录下的名字相同
 name: PSG1218 Padavan
 
 on: 
   release:
-    types: [published]
+    types: published
   push:
-  #  branches: 
-  #    - master
-  #  schedule:
-  #    - cron: 0 8 * * 5
-  watch:
-    types: [started]
+    branches:
+      - main
+    paths:
+      - 'PSG1218.config'
+#  schedule:
+#    - cron: 0 8 * * 5
+#  watch:
+#    types: started
 
 jobs:
   build:
@@ -31,16 +32,15 @@ jobs:
     - name: Clone source code
       run: |
         git clone --depth=1 https://github.com/hanwckf/rt-n56u.git /opt/rt-n56u
+        sudo mv -f PSG1218.config /opt/rt-n56u/trunk/configs/templates/
         cd /opt/rt-n56u/toolchain-mipsel
         sh dl_toolchain.sh
         mkdir -p /opt/images/
     - name: Build Firmware
-      env:
-        TNAME: PSG1218
       run: |
         cd /opt/rt-n56u/trunk
         sudo ./clear_tree
-        sudo fakeroot ./build_firmware_modify $TNAME
+        sudo fakeroot ./build_firmware_modify PSG1218
         sudo mv -f images/*.trx /opt/images/
     - name : Upload packages
       uses: actions/upload-artifact@master
