@@ -1,0 +1,49 @@
+name: K2P Padavan
+
+on: 
+  release:
+    types: published
+  push:
+    branches:
+      - main
+    paths:
+      - 'K2P.config'
+#  schedule:
+#    - cron: 0 8 * * 5
+#  watch:
+#    types: started
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    if: github.event.repository.owner.id == github.event.sender.id
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@master
+    - name: Initialization environment
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        sudo apt-get update
+        sudo apt-get -y install unzip libtool-bin curl cmake gperf gawk flex bison nano xxd fakeroot \
+        cpio git python-docutils gettext automake autopoint texinfo build-essential help2man \
+        pkg-config zlib1g-dev libgmp3-dev libmpc-dev libmpfr-dev libncurses5-dev libltdl-dev wget
+    - name: Clone source code
+      run: |
+        git clone --depth=1 https://e.coding.net/hanwckf/rt-n56u/padavan.git /opt/rt-n56u
+        sudo mv -f K2P.config /opt/rt-n56u/trunk/configs/templates/
+        cd /opt/rt-n56u/toolchain-mipsel
+        sh dl_toolchain.sh
+        mkdir -p /opt/images/
+    - name: Build Firmware
+      run: |
+        cd /opt/rt-n56u/trunk
+        sudo fakeroot ./build_firmware_modify K2P
+        sudo mv -f images/*.trx /opt/images/
+    - name : Upload packages
+      uses: actions/upload-artifact@master
+      if: always()
+      with:
+        name: Padavan-packages
+        path: /opt/images
