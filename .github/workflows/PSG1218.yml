@@ -2,7 +2,7 @@ name: PSG1218 Padavan
 
 on: 
   release:
-    types: published
+    types: [published]
   push:
     branches:
       - main
@@ -12,7 +12,6 @@ on:
 #    - cron: 0 8 * * 5
 #  watch:
 #    types: started
-
 
 jobs:
   build:
